@@ -22,19 +22,19 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_time_series(data, labels, title, xlabel, ylabel):
+    def plot_individual_object(results, title="Test Results"):
         """
-        :param data: List of lists, where each inner list is a time series
-        :param labels: List of labels for each time series
-        :param title:
-        :param xlabel:
-        :param ylabel:
+        :param results: The results dictionary from the simulation
+        :param title
         """
+        time = len(results["bandwidth"])
         plt.figure(figsize=(12, 6))
-        for i, series in enumerate(data):
-            plt.plot(series, label=labels[i])
+        plt.plot(range(time), results["bandwidth"], label="Bandwidth (Mbps)", linestyle="--", linewidth=2)
+        plt.plot(range(time), results["bitrates"], label="Selected Bitrate (Mbps)", marker="o", linewidth=1.5)
+        plt.plot(range(time), results["buffer_levels"], label="Buffer Level (s)", marker="x", linewidth=1.5)
         plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel("Time (s)")
+        plt.ylabel("Value")
         plt.legend()
+        plt.grid(True)
         plt.show()
