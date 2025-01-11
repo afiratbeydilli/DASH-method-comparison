@@ -1,4 +1,4 @@
-import numpy as np
+import math
 from clients.base_client import BaseClient
 
 """
@@ -22,7 +22,7 @@ class BOLAClient(BaseClient):
 
     def compute_utility(self, bitrate, buffer_level):
         # Note: np.log = ln, np.log10 = log10.
-        return np.log(bitrate) + self.alpha * (buffer_level / self.max_buffer)
+        return math.log(bitrate) + self.alpha * (buffer_level / self.max_buffer)
 
     def select_bitrate(self, bandwidth):
         utilities = [
