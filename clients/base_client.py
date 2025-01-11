@@ -3,7 +3,7 @@
     Base client methods that should be specialized in the derived classes.
 """
 class BaseClient:
-    def __init__(self, bitrates, max_buffer):
+    def __init__(self, bitrates, max_buffer, buffer_size):
         """
         Base properties for a streaming client.
         :param bitrates: List of available bitrates in Mbps (e.g., [1, 2, 4, 6, 8, 12])
@@ -11,7 +11,7 @@ class BaseClient:
         """
         self.bitrates = bitrates
         self.max_buffer = max_buffer
-        self.buffer_size = max_buffer / 2  # Start with half-full buffer
+        self.buffer_size = buffer_size
 
     def select_bitrate(self, bandwidth):
         """

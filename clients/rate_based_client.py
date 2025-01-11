@@ -8,8 +8,8 @@ from clients.base_client import BaseClient
     very old examples even though so many time has been passed (up to date).
 """
 class RateBasedMethodClient(BaseClient):
-    def __init__(self, bitrates, max_buffer, sliding_window_size=5):
-        super().__init__(bitrates, max_buffer)
+    def __init__(self, bitrates, max_buffer, buffer_size, sliding_window_size=5):
+        super().__init__(bitrates, max_buffer, buffer_size)
         self.sliding_window_size = sliding_window_size
         self.throughput_history = []  # Store recent throughput estimates
 
@@ -35,6 +35,12 @@ class RateBasedMethodClient(BaseClient):
         :param bandwidth: Current available bandwidth (Mbps)
         :return: Selected bitrate (Mbps)
         """
+        # Handle buffer depletion case
+        current_buffer = self.buffer_size
+        if current_buffer == 0:
+            print("Buffer is empty. Selecting the lowest bitrate to recover.")
+            return min(self.bitrates)
+
         estimated_throughput = self.estimate_throughput(bandwidth)
 
         # Choose the highest bitrate <= estimated throughput

@@ -9,7 +9,7 @@ class SingleClientTest(BaseTest):
     def __init__(self, segment_duration, playback_rate):
         super().__init__(segment_duration, playback_rate)
 
-    def run_test(self, client, bandwidth_pattern, time=20):
+    def run_test(self, client, bandwidth_pattern, time=30):
         """
         :param client: Streaming client (BOLAClient, PDControllerClient)
         :param bandwidth_pattern: List of bandwidth values over time

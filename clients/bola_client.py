@@ -12,12 +12,12 @@ from clients.base_client import BaseClient
 """
 
 class BOLAClient(BaseClient):
-    def __init__(self, bitrates, max_buffer, alpha=1.0):
+    def __init__(self, bitrates, max_buffer, buffer_size, alpha=1.0):
         """
         BOLA client for adaptive bitrate streaming.
         :param alpha: Weighting factor for buffer utility.
         """
-        super().__init__(bitrates, max_buffer)
+        super().__init__(bitrates, max_buffer, buffer_size)
         self.alpha = alpha
 
     def compute_utility(self, bitrate, buffer_level):
@@ -25,6 +25,12 @@ class BOLAClient(BaseClient):
         return math.log(bitrate) + self.alpha * (buffer_level / self.max_buffer)
 
     def select_bitrate(self, bandwidth):
+        # Handle buffer depletion case
+        current_buffer = self.buffer_size
+        if current_buffer == 0:
+            print("Buffer is empty. Selecting the lowest bitrate to recover.")
+            return min(self.bitrates)
+
         utilities = [
             (bitrate, self.compute_utility(bitrate, self.buffer_size))
             for bitrate in self.bitrates if bitrate <= bandwidth

@@ -13,7 +13,7 @@ from clients.base_client import BaseClient
     is correctly presented in below class.
 """
 class PDControllerClient(BaseClient):
-    def __init__(self, bitrates, max_buffer, bk1, bk2, sliding_window_size=5, T=2.0, eta=1.0):
+    def __init__(self, bitrates, max_buffer, buffer_size, bk1, bk2, sliding_window_size=5, T=2.0, eta=1.0):
         """
         :param bitrates: List of available bitrates in Mbps ([1, 2, 4, 6, 8, 12])
         :param max_buffer: Maximum buffer size in seconds
@@ -22,7 +22,8 @@ class PDControllerClient(BaseClient):
         :param T: Segment duration in seconds
         :param eta: Control aggressiveness factor (so the internet says)
         """
-        super().__init__(bitrates, max_buffer)
+        super().__init__(bitrates, max_buffer, buffer_size)
+
         # Parameters that are going to be used while calculation of kp and kd.
         self.bk1 = bk1  # Lower buffer threshold
         self.bk2 = bk2  # Upper buffer threshold
@@ -38,7 +39,7 @@ class PDControllerClient(BaseClient):
         # Parameters that are going to be used in bitrate selection.
         # This part resembles to RateBasedMethodClient, see that section.
         self.prev_bitrate = min(bitrates)  # Start with the lowest bitrate
-        self.prev_download_time = None  # Store the previous download time
+        self.prev_download_time = T  # Initial download time set to segment duration
         self.bandwidth_estimates = []
 
     def compute_kd(self):
@@ -112,9 +113,14 @@ class PDControllerClient(BaseClient):
         """
         Select the closest bitrate to the computed bitrate.
         """
-        current_buffer = self.buffer_size  # Step 1: Get the current buffer level
-        bitrate = self.compute_bitrate(current_buffer, bandwidth)  # Step 2: Compute the ideal bitrate
+        # Handle buffer depletion case
+        current_buffer = self.buffer_size
+        if current_buffer == 0:
+            print("Buffer is empty. Selecting the lowest bitrate to recover.")
+            return min(self.bitrates)
 
-        closest_bitrate = min(self.bitrates, key=lambda x: abs(x - bitrate))  # Step 3: Find the closest bitrate
-        self.prev_bitrate = closest_bitrate  # Step 4: Renew our 'previous'
+        bitrate = self.compute_bitrate(current_buffer, bandwidth)  # Step 1: Compute the ideal bitrate
+
+        closest_bitrate = min(self.bitrates, key=lambda x: abs(x - bitrate))  # Step 2: Find the closest bitrate
+        self.prev_bitrate = closest_bitrate  # Step 3: Renew our 'previous'
         return closest_bitrate  # One of our bitrates.

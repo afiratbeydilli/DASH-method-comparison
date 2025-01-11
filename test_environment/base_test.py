@@ -28,7 +28,7 @@ class BaseTest:
 
         # Simulate buffer consumption
         if client.buffer_size <= 0:
-            print(f"Playback stalled at time {t} seconds.")
+            print(f"Playback stalled.")
             client.buffer_size = 0
         else:
             client.buffer_size -= self.playback_rate
@@ -44,8 +44,13 @@ class BaseTest:
         :param buffer_levels: List of buffer levels over time (of the client)
         :return: Dictionary of metrics
         """
-        # Average bitrate
-        avg_bitrate = sum(bitrates) / len(bitrates)
+        # Filter out time steps with empty buffer
+        valid_bitrates = [
+            bitrate for bitrate, buffer in zip(bitrates, buffer_levels) if buffer > 0
+        ]
+
+        # Average bitrate (exclude stalls)
+        avg_bitrate = sum(valid_bitrates) / len(valid_bitrates) if valid_bitrates else 0
 
         # Bitrate switch count
         bitrate_switch_count = sum(
